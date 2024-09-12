@@ -161,7 +161,7 @@ export function decode(nip19: string): DecodeResult {
     case 'note':
       return { type: prefix, data: bytesToHex(data) }
     case 'noffer':
-      let tlv = parseTLV(data);
+      let tlv = parseTLV(data)
       if (!tlv[0]?.[0]) throw new Error('missing TLV 0 for noffer')
       if (tlv[0][0].length !== 32) throw new Error('TLV 0 should be 32 bytes')
       if (!tlv[1]?.[0]) throw new Error('missing TLV 1 for noffer')
@@ -268,9 +268,9 @@ export const nofferEncode = (offer: OfferPointer): string => {
   if (offer.price) {
     o[4] = [integerToUint8Array(offer.price)]
   }
-  const data = encodeTLV(o);
+  const data = encodeTLV(o)
   const words = bech32.toWords(data)
-  return bech32.encode("noffer", words, 5000);
+  return bech32.encode('noffer', words, 5000)
 }
 
 function encodeTLV(tlv: TLV): Uint8Array {
