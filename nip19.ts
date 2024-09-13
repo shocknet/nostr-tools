@@ -69,7 +69,7 @@ export type OfferPointer = {
   pubkey: string,
   relay: string,
   offer: string
-  priceType: OfferPriceType,
+  priceType?: OfferPriceType,
   price?: number
 }
 export enum OfferPriceType {
@@ -166,14 +166,14 @@ export function decode(nip19: string): DecodeResult {
       if (tlv[0][0].length !== 32) throw new Error('TLV 0 should be 32 bytes')
       if (!tlv[1]?.[0]) throw new Error('missing TLV 1 for noffer')
       if (!tlv[2]?.[0]) throw new Error('missing TLV 2 for noffer')
-      if (!tlv[3]?.[0]) throw new Error('missing TLV 3 for noffer')
+      if (tlv[3] && tlv[3][0].length !== 1) throw new Error('TLV 3 shoud be 1 byte')
       return {
         type: 'noffer',
         data: {
           pubkey: bytesToHex(tlv[0][0]),
           relay: utf8Decoder.decode(tlv[1][0]),
           offer: utf8Decoder.decode(tlv[2][0]),
-          priceType: tlv[3][0][0],
+          priceType: tlv[3]?.[0] ? parseInt(bytesToHex(tlv[3][0]), 8) : undefined,
           price: tlv[4] ? parseInt(bytesToHex(tlv[4][0]), 16) : undefined
         }
       }
@@ -258,12 +258,15 @@ export function naddrEncode(addr: AddressPointer): NAddr {
   return encodeBech32('naddr', data)
 }
 
-export const nofferEncode = (offer: OfferPointer): string => {
+export function nofferEncode(offer: OfferPointer): string {
   const o: TLV = {
     0: [hexToBytes(offer.pubkey)],
     1: [utf8Encoder.encode(offer.relay)],
     2: [utf8Encoder.encode(offer.offer)],
-    3: [new Uint8Array([Number(offer.priceType)])],
+  }
+
+  if (offer.priceType !== undefined) {
+    o[3] = [new Uint8Array([Number(offer.priceType)])]
   }
   if (offer.price) {
     o[4] = [integerToUint8Array(offer.price)]

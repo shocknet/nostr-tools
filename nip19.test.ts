@@ -10,6 +10,8 @@ import {
   type AddressPointer,
   type ProfilePointer,
   EventPointer,
+  nofferEncode,
+  type OfferPointer
 } from './nip19.ts'
 
 test('encode and decode nsec', () => {
@@ -150,4 +152,50 @@ test('decode naddr from go-nostr with different TLV ordering', () => {
   expect(pointer.relays).toContain('wss://nostr.banana.com')
   expect(pointer.kind).toEqual(30023)
   expect(pointer.identifier).toEqual('banana')
+})
+
+test('encode and decode noffer', () => {
+  let pk = getPublicKey(generateSecretKey())
+  let relay = 'wss://relay.nostr.example.mydomain.example.com'
+  let offerIdentifyingString = 'test offer identifier'
+
+  const noffer = nofferEncode({
+    pubkey: pk,
+    relay,
+    offer: offerIdentifyingString,
+    priceType: 0,
+    price: 50
+  })
+  expect(noffer).toMatch(/noffer1\w+/)
+  let { type, data } = decode(noffer)
+  expect(type).toEqual('noffer')
+
+  const pointer = data as OfferPointer
+  expect(pointer.pubkey).toEqual(pk)
+  expect(pointer.offer).toEqual(offerIdentifyingString)
+  expect(pointer.price).toEqual(50)
+  expect(pointer.priceType).toEqual(0)
+  expect(pointer.relay).toEqual(relay)
+})
+
+test('ecnode and decoded noffer with empty price and priceType', () => {
+  let pk = getPublicKey(generateSecretKey())
+  let relay = 'wss://relay.nostr.example.mydomain.example.com'
+  let offerIdentifyingString = 'test offer identifier'
+
+  const noffer = nofferEncode({
+    pubkey: pk,
+    relay,
+    offer: offerIdentifyingString,
+  })
+  expect(noffer).toMatch(/noffer1\w+/)
+  let { type, data } = decode(noffer)
+  expect(type).toEqual('noffer')
+
+  const pointer = data as OfferPointer
+  expect(pointer.pubkey).toEqual(pk)
+  expect(pointer.offer).toEqual(offerIdentifyingString)
+  expect(pointer.price).toBeUndefined()
+  expect(pointer.priceType).toBeUndefined()
+  expect(pointer.relay).toEqual(relay)
 })
