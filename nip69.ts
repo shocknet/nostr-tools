@@ -1,7 +1,7 @@
-import { hexToBytes } from "@noble/hashes/utils"
-import { decrypt, encrypt, getConversationKey } from "./nip44.ts"
-import { finalizeEvent, getPublicKey } from "./pure.ts"
-import { AbstractSimplePool } from "./abstract-pool.ts"
+import { hexToBytes } from '@noble/hashes/utils'
+import { decrypt, encrypt, getConversationKey } from './nip44.ts'
+import { finalizeEvent, getPublicKey } from './pure.ts'
+import { AbstractSimplePool } from './abstract-pool.ts'
 export type NofferData = { offer: string, amount?: number }
 export type Nip69Success = { bolt11: string }
 export type Nip69Error = { code: number, error: string, range: { min: number, max: number } }
@@ -16,7 +16,7 @@ export const SendNofferRequest = async (pool: AbstractSimplePool, privateKey: st
     pool.publish(relays, signed)
     const res = await pool.get(relays, newNip69Filter(pubKey, signed.id), { maxWait: 30 * 1000 })
     if (!res) {
-        throw new Error("failed to get nip69 response in time")
+        throw new Error('failed to get nip69 response in time')
     }
     decrypt(res.content, getConversationKey(privateBytes, pubKey))
     return JSON.parse(res.content) as Nip69Response
