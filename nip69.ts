@@ -22,6 +22,7 @@ export const SendNofferRequest = async (pool: AbstractSimplePool, privateKey: Ui
             onevent: async (e) => {
                 clearTimeout(timeout)
                 const content = decrypt(e.content, getConversationKey(privateKey, toPubKey))
+                closer.close()
                 res(JSON.parse(content))
             }
         })
